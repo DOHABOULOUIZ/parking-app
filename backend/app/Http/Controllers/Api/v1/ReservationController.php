@@ -8,6 +8,7 @@ use App\Http\Resources\PlaceResource;
 use App\Models\Place;
 use App\Models\Reservation;
 use App\Models\StripeSession;
+use App\Services\QRCodeService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,21 @@ use Stripe\Stripe;
 
 class ReservationController extends Controller
 {
+    /**
+     * Get all reservations for the authenticated user
+     */
+    public function myReservations(Request $request): JsonResponse
+    {
+        $reservations = Reservation::with('place.sector')
+            ->where('user_id', $request->user()->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'data' => $reservations
+        ]);
+    }
+
     /**
      * Book a reservation
      *
@@ -50,7 +66,7 @@ class ReservationController extends Controller
         //if yes
         if($reservationExists) {
             return response()->json([
-                'error' => 'You already have a reserved place. Please cancel it to reserve a new place.'
+                'error' => 'Vous avez d\'jà une place réservée. Veuillez l\'annuler pour réserver une nouvelle place.'
             ]);
         }
 
@@ -63,7 +79,7 @@ class ReservationController extends Controller
         //if yes
         if($reservationParked) {
             return response()->json([
-                'error' => 'You have already parked. Please end it to reserve a new place.'
+                'error' => 'Vous avez déjà un stationnement en cours. Veuillez le terminer pour réserver une nouvelle place.'
             ]);
         }
 
@@ -72,12 +88,13 @@ class ReservationController extends Controller
 
         if(!$place || $place->status !== 'available') {
             return response()->json([
-                'error' => 'Place is not available.'
+                'error' => 'La place n\'est pas disponible.'
             ]);
         }
 
         //use transaction to prevent partial create and update
-        DB::transaction(function() use ($place, $request) {
+        $reservation = null;
+        DB::transaction(function() use ($place, $request, &$reservation) {
             //store the reservation
             $reservation = Reservation::create([
                 'user_id' => $request->user()->id,
@@ -85,6 +102,10 @@ class ReservationController extends Controller
             ]);
 
             $reservation->place()->update(['status' => 'reserved']);
+            
+            // Generate QR code automatically
+            $qrCodeService = app(QRCodeService::class);
+            $qrCodeService->generateQRCode($reservation);
         });
 
         //refresh the place to get the updated status
@@ -92,7 +113,12 @@ class ReservationController extends Controller
 
         broadcast(new PlaceStatusUpdated($place))->toOthers();
 
-        return $this->placeResource($place, "Reservation successfully added.");
+        return response()->json([
+            'place' => PlaceResource::make($place),
+            'message' => 'Réservation créée avec succès !',
+            'pending_approval' => true, // Indicate that approval is needed
+            'approval_message' => '⏳ Votre réservation est en attente d\'approbation par un administrateur. Vous recevrez une notification dès qu\'elle sera approuvée.'
+        ]);
     }
 
     /**
@@ -134,18 +160,25 @@ class ReservationController extends Controller
     {
         if($response = $this->ensureUserOwnReservation($request, $reservation)) {
             return $response;
-        }else {
-            //use transaction to prevent partial create and update
-            DB::transaction(function() use ($reservation) {
-                //store the reservation
-                $reservation->update([
-                    'status' => 'parked',
-                    'start_time' => Carbon::now()
-                ]);
-
-                $reservation->place()->update(['status' => 'occupied']);
-            });
         }
+        
+        // Check if reservation is approved
+        if (!$reservation->is_approved) {
+            return response()->json([
+                'error' => '⏳ Cette réservation n\'est pas encore approuvée par l\'administrateur. Veuillez patienter.'
+            ], 403);
+        }
+        
+        //use transaction to prevent partial create and update
+        DB::transaction(function() use ($reservation) {
+            //store the reservation
+            $reservation->update([
+                'status' => 'parked',
+                'start_time' => Carbon::now()
+            ]);
+
+            $reservation->place()->update(['status' => 'occupied']);
+        });
 
         broadcast(new PlaceStatusUpdated($reservation->place))->toOthers();
 
@@ -176,6 +209,9 @@ class ReservationController extends Controller
             });
         }
 
+        // Refresh the reservation to get updated values
+        $reservation->refresh();
+
         $hours = ceil($reservation->start_time->diffInMinutes($reservation->end_time) / 60);
 
         $place = $reservation->place;
@@ -186,6 +222,10 @@ class ReservationController extends Controller
         $reservation->update([
             'amount' => $amount
         ]);
+
+        // Refresh again after amount update and reload place relation
+        $reservation->refresh();
+        $reservation->load('place.sector');
 
         broadcast(new PlaceStatusUpdated($reservation->place))->toOthers();
 
@@ -203,7 +243,7 @@ class ReservationController extends Controller
     {
         if($reservation->user_id !== $request->user()->id) {
             return response()->json([
-                'error' => 'No active reservation found.'
+                'error' => 'Aucune réservation active trouvée.'
             ]);
         }
         return null;
@@ -301,7 +341,7 @@ class ReservationController extends Controller
     {
         if($reservation->user_id !== $request->user()->id) {
             return response()->json([
-                'error' => 'Unauthorized'
+                'error' => 'Non autorisé'
             ], 403);
         }
 
@@ -332,14 +372,20 @@ class ReservationController extends Controller
     {
         if($reservation->user_id !== $request->user()->id) {
             return response()->json([
-                'error' => 'Unauthorized'
+                'error' => 'Non autorisé'
             ], 403);
         }
 
         if($reservation->status !== 'finished') {
             return response()->json([
-                'error' => 'Only finished reservations can be paid.'
+                'error' => 'Seules les réservations terminées peuvent être payées.'
             ]);
+        }
+
+        if(!$reservation->is_approved) {
+            return response()->json([
+                'error' => 'Cette réservation doit être approuvée par un administrateur avant de pouvoir être payée.'
+            ], 403);
         }
 
         $stripeUrl = $this->createStripeCheckout($reservation);
@@ -358,32 +404,39 @@ class ReservationController extends Controller
     public function paySuccess(Request $request):JsonResponse
     {
         $sessionId = $request->session_id;
-        //check if user has already reserved this place
+        $reservationId = $request->reservation_id;
+        $userId = $request->user()->id;
+
+        //check if user has a reservation
         $unpaidReservation = Reservation::where([
-            'id' => $request->reservation_id,
-            'user_id' => $request->user_id
+            'id' => $reservationId,
+            'user_id' => $userId
         ])->first();
+
         //if no reservation found
         if(!$unpaidReservation) {
             return response()->json([
-                'error' => 'No reservation found.'
-            ]);
+                'error' => 'Aucune réservation trouvée.'
+            ], 404);
         }
+
         //if no session id found
         if(!$sessionId) {
             return response()->json([
-                'error' => 'Payment not done successfully try again later.'
-            ]);
+                'error' => 'Le paiement n\'a pas réussi, veuillez réessayer plus tard.'
+            ], 400);
         }
+
         //check if stripe id is already used
         if(StripeSession::where('stripe_id', $sessionId)->exists()) {
             return response()->json([
-                'error' => 'This session id has already been used.'
+                'success' => true,
+                'message' => 'Le paiement a déjà été traité.'
             ]);
         }
 
         $stripeKey = env('STRIPE_KEY');
-        
+
         // If using test session (no Stripe key), accept the payment
         if (!$stripeKey && strpos($sessionId, 'test_session_') === 0) {
             try {
@@ -393,12 +446,13 @@ class ReservationController extends Controller
                 $unpaidReservation->paid = 1;
                 $unpaidReservation->save();
                 return response()->json([
-                    'message' => 'Payment is done successfully.'
+                    'success' => true,
+                    'message' => 'Le paiement a été effectué avec succès.'
                 ]);
-            } catch (\Exception $e) {
+            } catch (InvalidRequestException $e) {
                 return response()->json([
                     'error' => $e->getMessage()
-                ]);
+                ], 400);
             }
         }
 
@@ -414,17 +468,18 @@ class ReservationController extends Controller
                 $unpaidReservation->paid = 1;
                 $unpaidReservation->save();
                 return response()->json([
-                    'message' => 'Payment is done successfully.'
+                    'success' => true,
+                    'message' => 'Le paiement a été effectué avec succès.'
                 ]);
             } catch (InvalidRequestException $e) {
                 return response()->json([
                     'error' => $e->getMessage()
-                ]);
+                ], 400);
             }
         }
 
         return response()->json([
-            'error' => 'Payment method not configured.'
-        ]);
+            'error' => 'Méthode de paiement non configurée.'
+        ], 400);
     }
 }

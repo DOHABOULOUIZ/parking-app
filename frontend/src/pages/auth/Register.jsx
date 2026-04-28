@@ -5,6 +5,7 @@ import useValidation from '../../components/custom/useValidation'
 import Spinner from '../../components/layouts/Spinner'
 import { registerUserApi } from '../../config/api'
 import { useSelector } from 'react-redux'
+import './auth.css'
 
 export default function Register() {
     const { isLoggedIn } = useSelector(state => state.user) 
@@ -20,7 +21,7 @@ export default function Register() {
 
     useEffect(() => {
         if(isLoggedIn) navigate('/')
-    }, [isLoggedIn])
+    }, [isLoggedIn, navigate])
 
     const registerNewUser = async (e) => {
         e.preventDefault()
@@ -41,71 +42,82 @@ export default function Register() {
     }
 
     return (
-        <div className="row my-5">
-            <div className="col-md-6 mx-auto">
-                <div className="card border-dark border border-2 shadow rounded-0">
-                    <div className="card-header border-dark border-2 bg-white text-center mt-2">
-                        <h4>
-                            Register
-                        </h4>
-                    </div>
-                    <div className="card-body">
-                        <form onSubmit={(e) => registerNewUser(e)}>
-                            <div className="mb-3">
-                                <label htmlFor="name" className="form-label fw-bold">Name*</label>
-                                <input 
-                                    type="text" 
-                                    className="form-control p-2 border border-dark border-3 rounded-0" 
-                                    id="name" 
-                                    value={user.name}
-                                    onChange={(e) => setUser({
-                                        ...user, name: e.target.value
-                                    })}
-                                />
-                                { useValidation(validationErrors, 'name')}
+        <div className="auth-background">
+            <div className="auth-container">
+                {/* Header */}
+                <div className="auth-header">
+                    <h2 className="auth-title">Créer un compte</h2>
+                    <p className="auth-subtitle">
+                        S'inscrire pour accéder à la plateforme de stationnement
+                    </p>
+                </div>
+
+                {/* Form */}
+                <div className="auth-form-container">
+                    <form onSubmit={(e) => registerNewUser(e)}>
+                        {/* Name */}
+                        <div className="form-group">
+                            <label className="form-label">Nom complet</label>
+                            <input 
+                                type="text" 
+                                className="form-input"
+                                value={user.name}
+                                onChange={(e) => setUser({...user, name: e.target.value})}
+                                placeholder="Jean Dupont"
+                                required
+                            />
+                            {useValidation(validationErrors, 'name')}
+                        </div>
+
+                        {/* Email */}
+                        <div className="form-group">
+                            <label className="form-label">Email</label>
+                            <input 
+                                type="email" 
+                                className="form-input"
+                                value={user.email}
+                                onChange={(e) => setUser({...user, email: e.target.value})}
+                                placeholder="votre@email.com"
+                                required
+                            />
+                            {useValidation(validationErrors, 'email')}
+                        </div>
+
+                        {/* Password */}
+                        <div className="form-group">
+                            <label className="form-label">Mot de passe</label>
+                            <input 
+                                type="password" 
+                                className="form-input"
+                                value={user.password}
+                                onChange={(e) => setUser({...user, password: e.target.value})}
+                                placeholder="••••••••"
+                                required
+                            />
+                            {useValidation(validationErrors, 'password')}
+                        </div>
+
+                        {/* Submit Button */}
+                        {loading ? (
+                            <div className="auth-loading">
+                                <Spinner />
                             </div>
-                            <div className="mb-3">
-                                <label htmlFor="email" className="form-label fw-bold">Email address*</label>
-                                <input 
-                                    type="email" 
-                                    className="form-control p-2 border border-dark border-3 rounded-0" 
-                                    id="email" 
-                                    value={user.email}
-                                    onChange={(e) => setUser({
-                                        ...user, email: e.target.value
-                                    })}
-                                />
-                                { useValidation(validationErrors, 'email')}
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="password" className="form-label fw-bold">Password*</label>
-                                <input 
-                                    type="password" 
-                                    className="form-control p-2 border border-dark border-3 rounded-0" 
-                                    id="password" 
-                                    value={user.password}
-                                    onChange={(e) => setUser({
-                                        ...user, password: e.target.value
-                                    })}
-                                />
-                                { useValidation(validationErrors, 'password')}
-                            </div>
-                            {
-                                loading ?
-                                    <Spinner />
-                                :
-                                    <button type="submit" className="btn btn-dark">Submit</button>                          
-                            }
-                        </form>
-                    </div>
-                    <div className="card-footer border-dark border-2 bg-white text-center mt-2">
-                        <span className="fw-bold me-1">
-                            You already have an account log in from
-                        </span>
-                        <NavLink to="/login" className="text-dark fw-bold">
-                            here
-                        </NavLink>
-                    </div>
+                        ) : (
+                            <button 
+                                type="submit"
+                                className="auth-submit-btn"
+                            >
+                                S'inscrire
+                            </button>
+                        )}
+                    </form>
+                </div>
+
+                {/* Footer */}
+                <div className="auth-footer">
+                    <p>
+                        Vous avez déjà un compte ? <NavLink to="/login">Se connecter</NavLink>
+                    </p>
                 </div>
             </div>
         </div>

@@ -6,22 +6,29 @@ import Spinner from '../../components/layouts/Spinner'
 import { loginUserApi } from '../../config/api'
 import { useDispatch, useSelector } from 'react-redux'
 import { setCredentials } from '../../redux/slices/userSlice'
+import './auth.css'
 
-export default function Register() {
+export default function Login() {
     const { isLoggedIn } = useSelector(state => state.user) 
     const [user, setUser] = useState({
-        name: '',
         email: '',
         password: ''
     })
-    const dispatch = useDispatch()
+
     const [validationErrors, setValidationErrors] = useState(null)
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     useEffect(() => {
-        if(isLoggedIn) navigate('/')
-    }, [isLoggedIn])
+        if(isLoggedIn) {
+            // Small delay to ensure state is fully committed
+            const timer = setTimeout(() => {
+                navigate('/')
+            }, 0)
+            return () => clearTimeout(timer)
+        }
+    }, [isLoggedIn, navigate])
 
     const loginUser = async (e) => {
         e.preventDefault()
@@ -29,9 +36,16 @@ export default function Register() {
         setLoading(true)
         try {
             const data = await loginUserApi(user)
+            
+            // Vérifier que c'est un utilisateur normal (pas admin)
+            if (data.user.role === 'admin') {
+                toast.error('Accès refusé. Veuillez utiliser la page admin.')
+                setLoading(false)
+                return
+            }
+            
+            // Update Redux state with user data - useEffect will handle navigation
             dispatch(setCredentials({user: data.user, token: data.access_token}))
-            toast.success(data.message)
-            navigate('/')
         } catch (error) {
             if(error?.response?.status === 422) {
                 setValidationErrors(error.response.data.errors)
@@ -43,58 +57,68 @@ export default function Register() {
     }
 
     return (
-        <div className="row my-5">
-            <div className="col-md-6 mx-auto">
-                <div className="card border-dark border border-2 shadow rounded-0">
-                    <div className="card-header border-dark border-2 bg-white text-center mt-2">
-                        <h4>
-                            Login
-                        </h4>
-                    </div>
-                    <div className="card-body">
-                        <form onSubmit={(e) => loginUser(e)}>
-                            <div className="mb-3">
-                                <label htmlFor="email" className="form-label fw-bold">Email address*</label>
-                                <input 
-                                    type="email" 
-                                    className="form-control p-2 border border-dark border-3 rounded-0" 
-                                    id="email" 
-                                    value={user.email}
-                                    onChange={(e) => setUser({
-                                        ...user, email: e.target.value
-                                    })}
-                                />
-                                { useValidation(validationErrors, 'email')}
+        <div className="auth-background">
+            <div className="auth-container">
+                {/* Header */}
+                <div className="auth-header">
+                    <h2 className="auth-title">Connexion Utilisateur</h2>
+                    <p className="auth-subtitle">
+                        Connectez-vous pour réserver votre place
+                    </p>
+                </div>
+
+                {/* Form */}
+                <div className="auth-form-container">
+                    <form onSubmit={(e) => loginUser(e)}>
+                        {/* Email */}
+                        <div className="form-group">
+                            <label className="form-label">Email</label>
+                            <input 
+                                type="email" 
+                                className="form-input"
+                                value={user.email}
+                                onChange={(e) => setUser({...user, email: e.target.value})}
+                                placeholder="votre@email.com"
+                                required
+                            />
+                            {useValidation(validationErrors, 'email')}
+                        </div>
+
+                        {/* Password */}
+                        <div className="form-group">
+                            <label className="form-label">Mot de passe</label>
+                            <input 
+                                type="password" 
+                                className="form-input"
+                                value={user.password}
+                                onChange={(e) => setUser({...user, password: e.target.value})}
+                                placeholder="••••••••"
+                                required
+                            />
+                            {useValidation(validationErrors, 'password')}
+                        </div>
+
+                        {/* Submit Button */}
+                        {loading ? (
+                            <div className="auth-loading">
+                                <Spinner />
                             </div>
-                            <div className="mb-3">
-                                <label htmlFor="password" className="form-label fw-bold">Password*</label>
-                                <input 
-                                    type="password" 
-                                    className="form-control p-2 border border-dark border-3 rounded-0" 
-                                    id="password" 
-                                    value={user.password}
-                                    onChange={(e) => setUser({
-                                        ...user, password: e.target.value
-                                    })}
-                                />
-                                { useValidation(validationErrors, 'password')}
-                            </div>
-                            {
-                                loading ?
-                                    <Spinner />
-                                :
-                                    <button type="submit" className="btn btn-dark">Submit</button>                          
-                            }
-                        </form>
-                    </div>
-                    <div className="card-footer border-dark border-2 bg-white text-center mt-2">
-                        <span className="fw-bold me-1">
-                            New user create your account from
-                        </span>
-                        <NavLink to="/register" className="text-dark fw-bold">
-                            here
-                        </NavLink>
-                    </div>
+                        ) : (
+                            <button 
+                                type="submit"
+                                className="auth-submit-btn"
+                            >
+                                Se connecter
+                            </button>
+                        )}
+                    </form>
+                </div>
+
+                {/* Footer */}
+                <div className="auth-footer">
+                    <p>
+                        Pas de compte ? <NavLink to="/register">S'inscrire ici</NavLink>
+                    </p>
                 </div>
             </div>
         </div>

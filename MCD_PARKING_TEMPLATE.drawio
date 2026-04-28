@@ -1,0 +1,169 @@
+<mxfile host="app.diagrams.net" modified="2026-04-17T00:00:00.000Z" agent="5.0" version="24.0.0">
+  <diagram name="MCD Parking System" id="mcd-parking">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- SECTEUR Entity -->
+        <mxCell id="secteur-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EDF4FF;strokeColor=#1B2A6B;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="secteur-title" value="&lt;b&gt;SECTEUR&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1B2A6B;strokeColor=#1B2A6B;fontColor=#FFFFFF;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="secteur-attrs" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b&gt;▸ id (PK)&lt;/b&gt;&lt;br&gt;&amp;nbsp; nom : VARCHAR(100)&lt;br&gt;&amp;nbsp; description : TEXT&lt;br&gt;&amp;nbsp; prix : DECIMAL(8,2)&lt;br&gt;&amp;nbsp; timestamps&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontFamily=Consolas;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="90" y="115" width="180" height="115" as="geometry" />
+        </mxCell>
+        
+        <!-- PLACE Entity -->
+        <mxCell id="place-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EDF4FF;strokeColor=#1B2A6B;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="80" y="400" width="200" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="place-title" value="&lt;b&gt;PLACE&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1B2A6B;strokeColor=#1B2A6B;fontColor=#FFFFFF;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="400" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="place-attrs" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b&gt;▸ id (PK)&lt;/b&gt;&lt;br&gt;&amp;nbsp; place_number : INT&lt;br&gt;&amp;nbsp; status : ENUM&lt;br&gt;&amp;nbsp; &amp;nbsp; (&apos;libre&apos;, &apos;occupée&apos;,&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;&apos;réservée&apos;)&lt;br&gt;&amp;nbsp; timestamps&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontFamily=Consolas;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="90" y="435" width="180" height="135" as="geometry" />
+        </mxCell>
+        
+        <!-- RÉSERVATION Entity -->
+        <mxCell id="reservation-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF9E6;strokeColor=#1B2A6B;strokeWidth=4;" vertex="1" parent="1">
+          <mxGeometry x="400" y="280" width="260" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="reservation-title" value="&lt;b&gt;RÉSERVATION&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1B2A6B;strokeColor=#1B2A6B;fontColor=#FFFFFF;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="400" y="280" width="260" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="reservation-attrs" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b&gt;▸ id (PK)&lt;/b&gt;&lt;br&gt;&amp;nbsp; start_time : DATETIME&lt;br&gt;&amp;nbsp; end_time : DATETIME&lt;br&gt;&amp;nbsp; status : ENUM&lt;br&gt;&amp;nbsp; amount : DECIMAL(10,2)&lt;br&gt;&amp;nbsp; qr_code_token : STR(255)&lt;br&gt;&amp;nbsp; vehicle_reg : VARCHAR(20)&lt;br&gt;&amp;nbsp; checked_in_at : DATETIME&lt;br&gt;&amp;nbsp; checked_out_at : DATETIME&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontFamily=Consolas;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="410" y="320" width="240" height="210" as="geometry" />
+        </mxCell>
+        
+        <!-- UTILISATEUR Entity -->
+        <mxCell id="user-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EDF4FF;strokeColor=#1B2A6B;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="800" y="80" width="260" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="user-title" value="&lt;b&gt;UTILISATEUR&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1B2A6B;strokeColor=#1B2A6B;fontColor=#FFFFFF;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="800" y="80" width="260" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="user-attrs" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b&gt;▸ id (PK)&lt;/b&gt;&lt;br&gt;&amp;nbsp; name : VARCHAR(255)&lt;br&gt;&amp;nbsp; email : VARCHAR(255)&lt;br&gt;&amp;nbsp; password : VARCHAR(255)&lt;br&gt;&amp;nbsp; role : ENUM&lt;br&gt;&amp;nbsp; &amp;nbsp; (&apos;admin&apos;, &apos;user&apos;)&lt;br&gt;&amp;nbsp; email_verified_at : DT&lt;br&gt;&amp;nbsp; timestamps&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontFamily=Consolas;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="810" y="115" width="240" height="175" as="geometry" />
+        </mxCell>
+        
+        <!-- PAIEMENT Entity -->
+        <mxCell id="payment-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E6FAFA;strokeColor=#009B9B;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="440" y="640" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="payment-title" value="&lt;b&gt;PAIEMENT&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#009B9B;strokeColor=#009B9B;fontColor=#FFFFFF;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="440" y="640" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="payment-attrs" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b&gt;▸ id (PK)&lt;/b&gt;&lt;br&gt;&amp;nbsp; stripe_session_id : STR&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontFamily=Consolas;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="450" y="675" width="160" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- CONTIENT Association -->
+        <mxCell id="contient-diamond" value="&lt;b&gt;CONTIENT&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F39C12;strokeColor=#1B2A6B;strokeWidth=3;fontColor=#FFFFFF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="280" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="contient-line1" value="" style="endArrow=none;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#1B2A6B;" edge="1" parent="1" source="secteur-box" target="contient-diamond">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="400" as="sourcePoint" />
+            <mxPoint x="450" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="contient-line2" value="" style="endArrow=none;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#1B2A6B;" edge="1" parent="1" source="contient-diamond" target="place-box">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="400" as="sourcePoint" />
+            <mxPoint x="450" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="contient-card1" value="&lt;b&gt;1,1&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#1B2A6B;" vertex="1" parent="1">
+          <mxGeometry x="190" y="250" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="contient-card2" value="&lt;b&gt;0,n&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#1B2A6B;" vertex="1" parent="1">
+          <mxGeometry x="190" y="370" width="40" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- CONCERNE Association -->
+        <mxCell id="concerne-diamond" value="&lt;b&gt;CONCERNE&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F39C12;strokeColor=#1B2A6B;strokeWidth=3;fontColor=#FFFFFF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="300" y="450" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="concerne-line1" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#1B2A6B;" edge="1" parent="1" source="place-box" target="concerne-diamond">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="400" as="sourcePoint" />
+            <mxPoint x="450" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="concerne-line2" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#1B2A6B;" edge="1" parent="1" source="concerne-diamond" target="reservation-box">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="400" as="sourcePoint" />
+            <mxPoint x="450" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="concerne-card1" value="&lt;b&gt;1,1&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#1B2A6B;" vertex="1" parent="1">
+          <mxGeometry x="290" y="470" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="concerne-card2" value="&lt;b&gt;0,n&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#1B2A6B;" vertex="1" parent="1">
+          <mxGeometry x="430" y="470" width="40" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- EFFECTUE Association -->
+        <mxCell id="effectue-diamond" value="&lt;b&gt;EFFECTUE&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F39C12;strokeColor=#1B2A6B;strokeWidth=3;fontColor=#FFFFFF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="680" y="280" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="effectue-line1" value="" style="endArrow=none;html=1;rounded=0;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#1B2A6B;" edge="1" parent="1" source="user-box" target="effectue-diamond">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="400" as="sourcePoint" />
+            <mxPoint x="450" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="effectue-line2" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#1B2A6B;" edge="1" parent="1" source="reservation-box" target="effectue-diamond">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="400" as="sourcePoint" />
+            <mxPoint x="450" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="effectue-card1" value="&lt;b&gt;1,1&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#1B2A6B;" vertex="1" parent="1">
+          <mxGeometry x="750" y="225" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="effectue-card2" value="&lt;b&gt;0,n&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#1B2A6B;" vertex="1" parent="1">
+          <mxGeometry x="670" y="305" width="40" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- GÉNÈRE Association -->
+        <mxCell id="genere-diamond" value="&lt;b&gt;GÉNÈRE&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F39C12;strokeColor=#009B9B;strokeWidth=3;fontColor=#FFFFFF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="560" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="genere-line1" value="" style="endArrow=none;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#009B9B;" edge="1" parent="1" source="reservation-box" target="genere-diamond">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="400" as="sourcePoint" />
+            <mxPoint x="450" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="genere-line2" value="" style="endArrow=none;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#009B9B;" edge="1" parent="1" source="genere-diamond" target="payment-box">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="400" as="sourcePoint" />
+            <mxPoint x="450" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="genere-card1" value="&lt;b&gt;0,1&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#009B9B;" vertex="1" parent="1">
+          <mxGeometry x="540" y="535" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="genere-card2" value="&lt;b&gt;1,1&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#009B9B;" vertex="1" parent="1">
+          <mxGeometry x="540" y="620" width="40" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- FK Labels -->
+        <mxCell id="fk1" value="FK: sector_id" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#c0392b;fontStyle=1;fontFamily=Consolas;" vertex="1" parent="1">
+          <mxGeometry x="200" y="330" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="fk2" value="FK: place_id" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#c0392b;fontStyle=1;fontFamily=Consolas;" vertex="1" parent="1">
+          <mxGeometry x="350" y="410" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="fk3" value="FK: user_id" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#c0392b;fontStyle=1;fontFamily=Consolas;" vertex="1" parent="1">
+          <mxGeometry x="710" y="220" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

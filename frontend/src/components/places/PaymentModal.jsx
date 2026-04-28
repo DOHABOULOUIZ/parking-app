@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Button from '../custom/Button'
 import { useNavigate } from 'react-router'
 import { toast } from 'react-toastify'
 
@@ -9,9 +10,15 @@ export default function PaymentModal({ show, reservation, onClose }) {
     const handlePaymentClick = () => {
         console.log('Reservation object:', reservation)
         if (reservation?.id) {
-            navigate(`/pay/${reservation.id}`)
+            setProcessing(true)
+            // Close modal and navigate
+            onClose()
+            // Give modal time to close before navigating
+            setTimeout(() => {
+                navigate(`/pay/${reservation.id}`)
+            }, 100)
         } else {
-            toast.error('Reservation ID not found')
+            toast.error('ID de réservation introuvable')
             console.log('Available reservation data:', reservation)
         }
     }
@@ -22,13 +29,14 @@ export default function PaymentModal({ show, reservation, onClose }) {
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content custom-card">
-                    <div className="modal-header border-0">
+                    <div className="modal-header border-0" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h5 className="modal-title">Complete Payment</h5>
                         <button 
                             type="button" 
                             className="btn-close" 
                             onClick={onClose}
                             disabled={processing}
+                            style={{ cursor: processing ? 'not-allowed' : 'pointer', opacity: processing ? 0.6 : 1 }}
                         ></button>
                     </div>
                     <div className="modal-body">
@@ -56,18 +64,16 @@ export default function PaymentModal({ show, reservation, onClose }) {
                             </div>
                         </div>
                     </div>
-                    <div className="modal-footer border-0">
-                        <button 
-                            type="button" 
-                            className="btn btn-secondary"
+                    <div className="modal-footer border-0" style={{ display: 'flex', gap: '0.75rem' }}>
+                        <Button 
+                            variant="secondary"
                             onClick={onClose}
                             disabled={processing}
                         >
                             Close
-                        </button>
-                        <button 
-                            type="button" 
-                            className="btn btn-primary"
+                        </Button>
+                        <Button 
+                            variant="primary"
                             onClick={handlePaymentClick}
                             disabled={processing}
                         >
@@ -82,7 +88,7 @@ export default function PaymentModal({ show, reservation, onClose }) {
                                     Pay Now
                                 </>
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

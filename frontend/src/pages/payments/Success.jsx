@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router'
+import Button from '../../components/custom/Button'
 import { checkPaymentSuccessApi } from '../../config/api'
 import Spinner from '../../components/layouts/Spinner'
 
@@ -21,8 +22,7 @@ export default function Success() {
 
                 const data = await checkPaymentSuccessApi({
                     session_id: sessionId,
-                    reservation_id: reservationId,
-                    user_id: user.id
+                    reservation_id: reservationId
                 }, token)
 
                 setIsLoading(false)
@@ -75,31 +75,34 @@ export default function Success() {
                                 <h2 className="mb-3">{getTitle()}</h2>
                                 <p className="mb-4 lead">{message}</p>
                                 {status === 'success' && (
-                                    <div className="d-grid gap-2 d-md-flex justify-content-md-center">
-                                        <button
-                                            className="btn btn-primary me-md-2"
+                                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                        <Button
+                                            variant="primary"
                                             onClick={() => navigate('/')}
+                                            style={{ minWidth: '200px' }}
                                         >
                                             <i className="bi bi-house-door me-2"></i>
                                             Retour à l'accueil
-                                        </button>
-                                        <button
-                                            className="btn btn-outline-primary"
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
                                             onClick={() => navigate('/profile')}
+                                            style={{ minWidth: '200px' }}
                                         >
                                             <i className="bi bi-person me-2"></i>
                                             Voir le profil
-                                        </button>
+                                        </Button>
                                     </div>
                                 )}
                                 {status === 'error' && (
-                                    <button
-                                        className="btn btn-outline-danger"
+                                    <Button
+                                        variant="danger"
                                         onClick={() => navigate('/')}
+                                        style={{ minWidth: '200px' }}
                                     >
                                         <i className="bi bi-arrow-left me-2"></i>
                                         Retour à l'accueil
-                                    </button>
+                                    </Button>
                                 )}
                             </>
                         )}

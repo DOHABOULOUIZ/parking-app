@@ -118,9 +118,9 @@ export default function Profile() {
                             {reservations.map(r => {
                                 const s = statusLabel[r.status] || { text: r.status, color: '#64748b' }
                                 const isPaid = r.paid === true || r.paid === 1
-                                const canShowQR = r.status === 'parked' || (r.status === 'finished' && r.is_approved && isPaid)
-                                const canPay = r.status === 'finished' && r.is_approved && !isPaid
-                                const approved = r.is_approved === true
+                                const approved = r.is_approved === true || r.is_approved === 1
+                                const canShowQR = r.status === 'parked' || (r.status === 'finished' && approved && isPaid)
+                                const canPay = r.status === 'finished' && approved && !isPaid
                                 
                                 return (
                                     <tr key={r.id} style={{ 
@@ -128,7 +128,7 @@ export default function Profile() {
                                         background: canPay ? '#fef9c3' : 'transparent',
                                         transition: 'background 0.2s'
                                     }}>
-                                        <td style={td}>{r.place?.number || '—'}</td>
+                                        <td style={td}>{r.place?.place_number || '—'}</td>
                                         <td style={td}>{r.place?.sector?.name || '—'}</td>
                                         <td style={td}>{r.start_time ? new Date(r.start_time).toLocaleString('fr-FR') : '—'}</td>
                                         <td style={td}>

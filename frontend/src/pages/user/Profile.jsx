@@ -117,10 +117,10 @@ export default function Profile() {
                         <tbody>
                             {reservations.map(r => {
                                 const s = statusLabel[r.status] || { text: r.status, color: '#64748b' }
-                                const canShowQR = r.status !== 'cancelled'
-                                const canPay = r.status === 'finished' && r.is_approved && !r.paid
-                                const approved = r.is_approved === true
                                 const isPaid = r.paid === true || r.paid === 1
+                                const canShowQR = r.status === 'parked' || (r.status === 'finished' && r.is_approved && isPaid)
+                                const canPay = r.status === 'finished' && r.is_approved && !isPaid
+                                const approved = r.is_approved === true
                                 
                                 return (
                                     <tr key={r.id} style={{ 

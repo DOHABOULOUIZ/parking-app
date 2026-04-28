@@ -82,40 +82,44 @@ export default function PaymentPage() {
 
     const handlePayment = async (e) => {
         e.preventDefault()
+
         if (!validateForm()) {
             toast.error('Remplissez tous les champs correctement')
             return
         }
+
         setProcessing(true)
+
         try {
             const data = await createPaymentSessionApi(reservationId, token)
+
             if (data.payment_url) {
-                toast.success('✅ Paiement validé!')
+                // Stripe mode
+                toast.success('✅ Redirection vers le paiement...')
                 setTimeout(() => { window.location.href = data.payment_url }, 800)
             } else {
-                // No Stripe mode - mark as paid locally
+                // Test mode - redirect to success page
                 const testSessionId = `test_session_${reservationId}_${Date.now()}`
-                try {
-                    const paymentData = await checkPaymentSuccessApi({
-                        session_id: testSessionId,
-                        reservation_id: reservationId
-                    }, token)
-                    
-                    if (paymentData.error) {
-                        toast.error(paymentData.error)
-                    } else {
-                        toast.success('✅ Paiement accepté!')
-                        setTimeout(() => { navigate('/') }, 1500)
-                    }
-                } catch {
-                    toast.success('✅ Paiement accepté!')
-                    setTimeout(() => { navigate('/') }, 1500)
-                }
+                toast.success('✅ Paiement validé! Redirection...')
+
+                // Reset form immediately
+                setFormData({
+                    cardName: '',
+                    cardNumber: '',
+                    expiryDate: '',
+                    cvv: '',
+                })
+                setErrors({})
+                setProcessing(false)
+
+                // Navigate to success page with hard refresh to ensure proper initialization
+                setTimeout(() => {
+                    window.location.href = `/pay/success/?session_id=${testSessionId}&reservation=${reservationId}`
+                }, 1500)
             }
         } catch (error) {
-            toast.success('✅ Paiement accepté!')
-            setTimeout(() => { navigate('/') }, 1500)
-        } finally {
+            console.error('Payment error:', error)
+            toast.error('Erreur lors du paiement. Veuillez réessayer.')
             setProcessing(false)
         }
     }
@@ -267,10 +271,10 @@ export default function PaymentPage() {
                                 {processing ? (
                                     <>
                                         <span className="spinner"></span>
-                                        Traitement...
+                                        Traitement en cours...
                                     </>
                                 ) : (
-                                    <>🔐 Payer {amount.toFixed(2)}</>
+                                    <>🔐 Payer ${amount.toFixed(2)}</>
                                 )}
                             </button>
                         </form>
@@ -278,18 +282,18 @@ export default function PaymentPage() {
 
                     {paymentMethod === 'paypal' && (
                         <div className="alt-payment">
-                            <p>Redirection sécurisée vers PayPal</p>
+                            <p>🅿️ Redirection sécurisée vers PayPal</p>
                             <button onClick={handlePayment} disabled={processing} className="btn-professional btn-primary">
-                                {processing ? 'Traitement...' : `🅿️ PayPal - $${amount.toFixed(2)}`}
+                                {processing ? '⏳ Traitement...' : `🅿️ Payer ${amount.toFixed(2)}`}
                             </button>
                         </div>
                     )}
 
                     {paymentMethod === 'mobile' && (
                         <div className="alt-payment">
-                            <p>Paiement par SMS ou application mobile</p>
+                            <p>📱 Paiement par SMS ou application mobile</p>
                             <button onClick={handlePayment} disabled={processing} className="btn-professional btn-primary">
-                                {processing ? 'Traitement...' : `📱 Mobile - $${amount.toFixed(2)}`}
+                                {processing ? '⏳ Traitement...' : `📱 Payer ${amount.toFixed(2)}`}
                             </button>
                         </div>
                     )}

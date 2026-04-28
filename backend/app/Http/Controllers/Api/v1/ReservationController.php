@@ -443,8 +443,10 @@ class ReservationController extends Controller
                 StripeSession::create([
                     'stripe_id' => $sessionId
                 ]);
-                $unpaidReservation->paid = 1;
-                $unpaidReservation->save();
+                $unpaidReservation->update([
+                    'paid' => 1,
+                    'is_approved' => true
+                ]);
                 return response()->json([
                     'success' => true,
                     'message' => 'Le paiement a été effectué avec succès.'
@@ -465,8 +467,10 @@ class ReservationController extends Controller
                 StripeSession::create([
                     'stripe_id' => $sessionId
                 ]);
-                $unpaidReservation->paid = 1;
-                $unpaidReservation->save();
+                $unpaidReservation->update([
+                    'paid' => 1,
+                    'is_approved' => true
+                ]);
                 return response()->json([
                     'success' => true,
                     'message' => 'Le paiement a été effectué avec succès.'

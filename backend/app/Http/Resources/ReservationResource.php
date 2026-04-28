@@ -22,7 +22,9 @@ class ReservationResource extends JsonResource
             'end_time' => $this->end_time,
             'status' => $this->status,
             'amount' => $this->amount,
-            'paid' => $this->paid
+            'paid' => $this->paid,
+            'is_approved' => $this->is_approved,
+            'rejection_reason' => $this->rejection_reason
         ];
     }
 }

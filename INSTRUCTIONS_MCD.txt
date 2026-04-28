@@ -1,0 +1,71 @@
+========================================
+  INSTRUCTIONS RAPIDES - GÉNÉRATION MCD
+========================================
+
+✅ Draw.io est déjà ouvert dans votre navigateur !
+
+ÉTAPES À SUIVRE (5 minutes) :
+
+1️⃣  Dans Draw.io :
+   - Cliquez sur "File" → "Open from" → "Device"
+   - Sélectionnez : MCD_PARKING_TEMPLATE.drawio
+   - Votre MCD s'affiche automatiquement ! 🎉
+
+2️⃣  Vérifiez le MCD :
+   - Toutes les entités sont là : SECTEUR, PLACE, RÉSERVATION, UTILISATEUR, PAIEMENT
+   - Toutes les associations (losanges) sont présentes
+   - Ajustez si nécessaire (couleurs, textes, positions)
+
+3️⃣  Exportez en PNG haute qualité :
+   - File → Export as → PNG
+   - IMPORTANT : 
+     * Zoom : 300% (pour haute résolution)
+     * Transparent Background : ✓ COCHER
+     * Border Width : 10
+   - Cliquez "Export"
+
+4️⃣  Sauvegardez le fichier :
+   - Nom : MCD_Parking.png
+   - Emplacement : CE MÊME DOSSIER (à côté du rapport HTML)
+
+5️⃣  Actualisez le rapport :
+   - Retournez dans votre navigateur (rapport ouvert)
+   - Appuyez sur F5 (actualiser)
+   - Le MCD s'affiche ! ✅
+
+========================================
+
+📁 FICHIERS FOURNIS :
+   - MCD_PARKING_TEMPLATE.drawio (template complet)
+   - GUIDE_DRAWIO_MCD.md (guide détaillé)
+   - GUIDE_RAPIDE_MCD.md (guide express)
+   - RAPPORT_STAGE_FINAL.html (votre rapport)
+
+🔗 LIENS UTILES :
+   - Draw.io : https://app.diagrams.net/
+   - Guide Draw.io : Ouvrez GUIDE_DRAWIO_MCD.md
+
+💡 ALTERNATIVE :
+   Si Draw.io ne fonctionne pas, vous pouvez :
+   - Utiliser PowerPoint / Google Slides
+   - Utiliser JMerise (outil français)
+   - Créer une capture d'écran d'un MCD existant
+   - Toujours exporter en PNG haute qualité !
+
+========================================
+
+⚠️  IMPORTANT :
+   - Le fichier PNG DOIT s'appeler : MCD_Parking.png
+   - Le fichier PNG DOIT être dans CE dossier
+   - Qualité minimum : 300 DPI (réglage Zoom 300%)
+
+========================================
+
+🆘 BESOIN D'AIDE ?
+   - Consultez GUIDE_RAPIDE_MCD.md
+   - Ou lisez les instructions dans le rapport HTML
+   - Draw.io est très intuitif !
+
+========================================
+
+Bonne génération ! 🚀

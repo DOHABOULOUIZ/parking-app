@@ -1,0 +1,422 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useSelector } from 'react-redux';
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
+} from 'recharts';
+import { toast } from 'react-toastify';
+import { createApiClient } from '../config/api';
+import './AnalyticsDashboard.css';
+
+const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+const getPeriodDays = (period) => {
+  const days = { day: 1, week: 7, month: 30, year: 365 };
+  return days[period] || 7;
+};
+
+const safeToFixed = (value, decimals = 2) => {
+  const num = parseFloat(value);
+  return isNaN(num) ? '0' : num.toFixed(decimals);
+};
+
+// KPI Card Component - Refactored
+function KPICard({ title, value, trend, colorClass }) {
+  const isTrend = trend && (trend.includes('+') || trend.includes('nouveaux'));
+  const trendColor = isTrend ? 'var(--color-success)' : 'var(--color-text-light)';
+
+  return (
+    <div className="kpi-card-modern" style={{ '--kpi-color': colorClass }}>
+      <p className="kpi-title">{title}</p>
+      <h3 className="kpi-value">{value}</h3>
+      <p className="kpi-trend" style={{ color: trendColor }}>{trend || 'N/A'}</p>
+    </div>
+  );
+}
+
+export default function AnalyticsDashboard() {
+  const { token } = useSelector(state => state.user);
+  const [period, setPeriod] = useState('week');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  // Data States
+  const [analytics, setAnalytics] = useState({});
+  const [occupancyTrend, setOccupancyTrend] = useState([]);
+  const [revenueTrend, setRevenueTrend] = useState([]);
+  const [cancellationTrend, setCancellationTrend] = useState([]);
+  const [sectorComparison, setSectorComparison] = useState([]);
+  const [topUsers, setTopUsers] = useState([]);
+  const [durationDist, setDurationDist] = useState([]);
+  const [hourlyOccupancy, setHourlyOccupancy] = useState([]);
+
+  // Fetch Analytics Data
+  const fetchAnalytics = useCallback(async () => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      if (!token) {
+        setError('Authentification requise. Veuillez vous connecter.');
+        setLoading(false);
+        return;
+      }
+
+      const apiClient = createApiClient(token);
+      const days = getPeriodDays(period);
+
+      const endpoints = [
+        { url: '/admin/analytics/dashboard', setter: setAnalytics },
+        { url: '/admin/analytics/occupancy-trend', setter: setOccupancyTrend, key: 'trend' },
+        { url: '/admin/analytics/revenue-trend', setter: setRevenueTrend, key: 'trend' },
+        { url: '/admin/analytics/cancellation-trend', setter: setCancellationTrend, key: 'trend' },
+        { url: '/admin/analytics/sector-comparison', setter: setSectorComparison, key: 'comparison' },
+        { url: '/admin/analytics/top-users', setter: setTopUsers, key: 'top_users' },
+        { url: '/admin/analytics/duration-distribution', setter: setDurationDist, key: 'distribution' },
+        { url: '/admin/analytics/hourly-occupancy', setter: setHourlyOccupancy, key: 'hourly' },
+      ];
+
+      const params = { period };
+      if (period !== 'day' && period !== 'week') {
+        params.days = days;
+      }
+
+      const requests = endpoints.map(ep =>
+        apiClient.get(ep.url, { params })
+          .then(res => {
+            const data = ep.key ? (res.data[ep.key] || res.data) : res.data;
+            ep.setter(Array.isArray(data) ? data : data || []);
+          })
+          .catch(err => {
+            console.error(`❌ Error fetching ${ep.url}:`, err.response?.data || err.message);
+            ep.setter([]);
+          })
+      );
+
+      await Promise.all(requests);
+    } catch (err) {
+      console.error('Analytics fetch error:', err);
+      setError('Erreur lors du chargement des données');
+    } finally {
+      setLoading(false);
+    }
+  }, [period, token]);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
+
+  // Export Report
+  const handleExportReport = async (format) => {
+    try {
+      setExportLoading(true);
+
+      if (!token) {
+        toast.error('Authentification requise');
+        return;
+      }
+
+      const apiClient = createApiClient(token);
+
+      const response = await apiClient.post(
+        '/admin/analytics/export-report',
+        {
+          start_date: startDate || new Date(Date.now() - getPeriodDays(period) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          end_date: endDate || new Date().toISOString().split('T')[0],
+          format,
+        },
+        { responseType: format === 'json' ? 'json' : 'blob' }
+      );
+
+      if (format !== 'json') {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `analytics_report.${format}`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentElement.removeChild(link);
+      }
+
+      toast.success(`Rapport exporté en ${format.toUpperCase()}`);
+    } catch (err) {
+      console.error('Export error:', err);
+      toast.error('Erreur lors de l\'export');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  // Transform data for charts
+  const occupancyData = occupancyTrend.map(item => ({
+    date: item.date,
+    taux: parseFloat(item.rate || item.occupancy_rate || 0),
+  }));
+
+  const revenueData = revenueTrend.map(item => ({
+    date: item.date,
+    revenus: parseFloat(item.revenue || 0),
+  }));
+
+  const cancellationData = cancellationTrend.map(item => ({
+    date: item.date,
+    taux: parseFloat(item.rate || 0),
+  }));
+
+  const sectorData = sectorComparison.map(item => ({
+    name: item.name || item.sector_name || 'N/A',
+    value: parseInt(item.total_reservations || item.reservations_count || 0),
+  }));
+
+  const durationData = durationDist.map(item => ({
+    name: item.range || 'N/A',
+    value: item.count || 0,
+  }));
+
+  const hourlyData = hourlyOccupancy.map(item => ({
+    hour: item.hour || 'N/A',
+    occupancy: parseFloat(item.occupancy || 0),
+  }));
+
+  // Render
+  if (loading) {
+    return (
+      <div className="container-professional" style={{ textAlign: 'center', padding: '5rem 2rem' }}>
+        <div style={{ width: 48, height: 48, border: '4px solid #e2e8f0', borderTopColor: 'var(--color-primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 1.5rem' }} />
+        <p style={{ color: 'var(--color-text-light)', fontSize: '1rem', fontWeight: 500 }}>Chargement des statistiques...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: '3rem 2rem' }}  className="container-professional">
+        <div className="card-professional" style={{ textAlign: 'center' }}>
+          <div className="card-professional-body">
+            <h2 style={{ color: 'var(--color-danger)', marginBottom: '1rem' }}>Erreur</h2>
+            <p style={{ color: 'var(--color-text-light)', marginBottom: '1.5rem' }}>{error}</p>
+            <button onClick={() => fetchAnalytics()} className="btn-professional btn-primary">
+              Réessayer
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container-professional">
+      {/* Header */}
+      <div className="page-header">
+        <div className="page-header-title">
+          <img src="/logo.png" alt="ParkApp Logo" className="dashboard-logo" />
+          <div>
+            <h1>Tableau de Bord Analytique</h1>
+            <p>Statistiques et tendances en temps réel de votre parking</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="filters-card">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', alignItems: 'flex-end' }}>
+          <div>
+            <label>Période</label>
+            <select value={period} onChange={(e) => setPeriod(e.target.value)}>
+              <option value="day">Aujourd'hui</option>
+              <option value="week">Cette semaine</option>
+              <option value="month">Ce mois</option>
+              <option value="year">Cette année</option>
+            </select>
+          </div>
+          <div>
+            <label>De</label>
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          </div>
+          <div>
+            <label>À</label>
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
+          <div>
+            <button onClick={fetchAnalytics} className="btn-professional btn-primary" style={{ width: '100%' }}>
+              Appliquer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="kpi-grid">
+        <KPICard
+          title="Taux d'Occupation"
+          value={`${safeToFixed(analytics.occupancy_rate || 0)}%`}
+          trend={analytics.occupancy_change ? `${analytics.occupancy_change > 0 ? '+' : ''}${analytics.occupancy_change}% vs période préc.` : 'N/A'}
+          colorClass="var(--color-primary)"
+        />
+        <KPICard
+          title="Réservations Total"
+          value={analytics.total_reservations || 0}
+          trend={analytics.reservations_change ? `${analytics.reservations_change > 0 ? '+' : ''}${analytics.reservations_change} réservations` : 'N/A'}
+          colorClass="var(--color-success)"
+        />
+        <KPICard
+          title="Revenus"
+          value={`${safeToFixed(analytics.total_revenue || 0)} MAD`}
+          trend={analytics.revenue_change ? `${analytics.revenue_change > 0 ? '+' : ''}${analytics.revenue_change}% vs période préc.` : 'N/A'}
+          colorClass="var(--color-warning)"
+        />
+        <KPICard
+          title="Taux d'Annulation"
+          value={`${safeToFixed(analytics.cancellation_rate || 0)}%`}
+          trend={analytics.cancellation_change ? `${analytics.cancellation_change > 0 ? '+' : ''}${analytics.cancellation_change}% vs période préc.` : 'N/A'}
+          colorClass="var(--color-danger)"
+        />
+      </div>
+
+      {/* Export */}
+      <div className="export-card">
+        <div>
+          <h3>Exporter les rapports</h3>
+          <p>Téléchargez les données analytiques au format de votre choix</p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button onClick={() => handleExportReport('excel')} className="btn-professional btn-primary">
+            {exportLoading ? '⏳ Export...' : '📊 Exporter Excel'}
+          </button>
+          <button onClick={() => handleExportReport('csv')} className="btn-professional btn-secondary">
+            {exportLoading ? '⏳ Export...' : '📋 Exporter CSV'}
+          </button>
+        </div>
+      </div>
+
+      {/* Charts Grid */}
+      <div className="charts-grid">
+        {/* Occupancy Chart */}
+        <div className="card-professional">
+          <div className="card-professional-header">
+            <h3>📈 Taux d'occupation</h3>
+          </div>
+          <div className="card-professional-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={occupancyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="taux" stroke="#2563eb" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Revenue Chart */}
+        <div className="card-professional">
+          <div className="card-professional-header">
+            <h3>💰 Évolution des revenus</h3>
+          </div>
+          <div className="card-professional-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Area type="monotone" dataKey="revenus" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Cancellation Chart */}
+        <div className="card-professional">
+          <div className="card-professional-header">
+            <h3>❌ Taux d'annulation</h3>
+          </div>
+          <div className="card-professional-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={cancellationData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="taux" fill="#ef4444" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Sector Comparison */}
+        <div className="card-professional">
+          <div className="card-professional-header">
+            <h3>🏢 Comparaison par secteur</h3>
+          </div>
+          <div className="card-professional-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={sectorData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {sectorData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Duration Distribution */}
+        <div className="card-professional">
+          <div className="card-professional-header">
+            <h3>⏱️ Distribution des durées</h3>
+          </div>
+          <div className="card-professional-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={durationData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" fill="#8b5cf6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Hourly Occupancy */}
+        <div className="card-professional">
+          <div className="card-professional-header">
+            <h3>🕐 Occupation horaire</h3>
+          </div>
+          <div className="card-professional-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={hourlyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="hour" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="occupancy" stroke="#f59e0b" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

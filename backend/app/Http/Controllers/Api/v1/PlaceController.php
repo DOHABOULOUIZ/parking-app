@@ -11,9 +11,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class PlaceController extends Controller
 {
     //
-    public function index():JsonResource
+    public function index(Request $request):JsonResource
     {
-        $places = Place::with('sector','reservations')->get();
+        $perPage = (int) $request->input('per_page', 6);
+        $places  = Place::with('sector', 'reservations')->paginate($perPage);
         return PlaceResource::collection($places);
     }
 }

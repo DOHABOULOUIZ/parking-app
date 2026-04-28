@@ -23,9 +23,10 @@ class UserController extends Controller
     public function store(StoreUserRequest $request):JsonResponse
     {
         $data = $request->validated();
+        $data['password'] = Hash::make($data['password']);
         User::create($data);
         return response()->json([
-            'message' => 'Account created successfully.'
+            'message' => 'Compte créé avec succès.'
         ]);
     }
 
@@ -49,7 +50,7 @@ class UserController extends Controller
         return response()->json([
             'user' => UserResource::make($user),
             'access_token' => $user->createToken('new_user')->plainTextToken,
-            'message' => 'Logged in successfully.'
+            'message' => 'Connecté avec succès.'
         ]);
     }
 
@@ -63,7 +64,7 @@ class UserController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
         return response()->json([
-            'message' => 'Logged out successfully.'
+            'message' => 'Déconnecté avec succès.'
         ]);
     }
 }

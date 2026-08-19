@@ -41,6 +41,11 @@ jobs:
 
       - name: Build frontend
         working-directory: ./frontend
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL || secrets.VITE_API_URL }}
+          VITE_WS_HOST: ${{ vars.VITE_WS_HOST || secrets.VITE_WS_HOST }}
+          VITE_WS_PORT: ${{ vars.VITE_WS_PORT || secrets.VITE_WS_PORT }}
+          VITE_WS_TLS: ${{ vars.VITE_WS_TLS || secrets.VITE_WS_TLS }}
         run: npm run build
 
       - name: Add SPA fallback

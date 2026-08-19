@@ -1,0 +1,21 @@
+<?php
+
+$frontendUrl = rtrim(env('FRONTEND_URL', 'http://localhost:5173'), '/');
+$configuredOrigins = array_filter(array_map('trim', explode(',', env('CORS_ALLOWED_ORIGINS', ''))));
+
+return [
+    'paths' => ['api/*', 'broadcasting/auth', 'sanctum/csrf-cookie'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => array_values(array_unique(array_filter([
+        $frontendUrl,
+        'https://dohaboulouiz.github.io',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        ...$configuredOrigins,
+    ]))),
+    'allowed_origins_patterns' => [],
+    'allowed_headers' => ['*'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => false,
+];

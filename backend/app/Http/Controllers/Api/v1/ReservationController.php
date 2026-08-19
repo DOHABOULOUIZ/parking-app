@@ -306,10 +306,11 @@ class ReservationController extends Controller
     private function createStripeCheckout(Reservation $reservation):string
     {
         $stripeKey = env('STRIPE_KEY');
+        $frontendUrl = rtrim(env('FRONTEND_URL', 'http://localhost:5173'), '/');
         
         // If no Stripe key is set, return a test URL for development
         if (!$stripeKey) {
-            return 'http://localhost:5173/pay/test/' . $reservation->id;
+            return $frontendUrl . '/pay/test/' . $reservation->id;
         }
         
         Stripe::setApiKey($stripeKey);
@@ -326,7 +327,7 @@ class ReservationController extends Controller
                 'quantity' => 1
             ]],
             'mode' => 'payment',
-            'success_url' => 'http://localhost:5173/pay/success/?session_id={CHECKOUT_SESSION_ID}&reservation='.$reservation->id
+            'success_url' => $frontendUrl . '/pay/success/?session_id={CHECKOUT_SESSION_ID}&reservation='.$reservation->id
         ]);
         return $checkout_session->url;
     }

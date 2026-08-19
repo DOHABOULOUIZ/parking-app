@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { useSelector } from 'react-redux'
 import Pusher from 'pusher-js'
 import Echo from 'laravel-echo'
+import { API_BASE_URL } from '../../config/api'
 
 const PER_PAGE = 6
 
@@ -46,13 +47,13 @@ export default function PlacesList() {
         const echo = new Echo({
             broadcaster:  'pusher',
             key:          'zkn74klwnhkjynekovik',
-            wsHost:       'localhost',
-            wsPort:       8080,
+            wsHost:       import.meta.env.VITE_WS_HOST || 'localhost',
+            wsPort:       Number(import.meta.env.VITE_WS_PORT || 8080),
             cluster:      'mt1',
-            forceTLS:     false,
-            encrypted:    false,
+            forceTLS:     import.meta.env.VITE_WS_TLS === 'true',
+            encrypted:    import.meta.env.VITE_WS_TLS === 'true',
             disableStats: true,
-            authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+            authEndpoint: `${API_BASE_URL}/broadcasting/auth`,
             auth: { headers: { Authorization: `Bearer ${token}` } },
         })
 

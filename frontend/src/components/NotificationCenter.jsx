@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Bell, Check, X } from 'lucide-react';
 import axios from 'axios';
 import Button from '../custom/Button';
+import { API_BASE_URL } from '../config/api';
 
 export default function NotificationCenter() {
   const [notifications, setNotifications] = useState([]);
@@ -17,7 +18,7 @@ export default function NotificationCenter() {
   const fetchUnreadCount = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('/api/notifications/unread-count', {
+      const response = await axios.get(`${API_BASE_URL}/notifications/unread-count`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUnreadCount(response.data.count);
@@ -30,7 +31,7 @@ export default function NotificationCenter() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('/api/notifications', {
+      const response = await axios.get(`${API_BASE_URL}/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(response.data.data || []);
@@ -44,7 +45,7 @@ export default function NotificationCenter() {
   const markAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`/api/notifications/${notificationId}/read`, {}, {
+      await axios.post(`${API_BASE_URL}/notifications/${notificationId}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUnreadCount();
@@ -57,7 +58,7 @@ export default function NotificationCenter() {
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post('/api/notifications/read-all', {}, {
+      await axios.post(`${API_BASE_URL}/notifications/read-all`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUnreadCount();

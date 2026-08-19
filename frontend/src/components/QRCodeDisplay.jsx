@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import Button from './custom/Button';
+import { API_BASE_URL } from '../config/api';
 
 export default function QRCodeDisplay({ reservationId }) {
   const { token } = useSelector(state => state.user);
@@ -24,7 +25,7 @@ export default function QRCodeDisplay({ reservationId }) {
   const fetchQRCode = async () => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/api/qrcode/reservation/${reservationId}`,
+        `${API_BASE_URL}/qrcode/reservation/${reservationId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setQrCodeImage(response.data.qr_code_image);

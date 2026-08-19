@@ -46,7 +46,7 @@ function AdminPage({ children }) {
 
 export default function App() {
     return (
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
             <Suspense fallback={null}>
                 <Routes>
                     {/* ── Auth (no layout) ──────────────────── */}

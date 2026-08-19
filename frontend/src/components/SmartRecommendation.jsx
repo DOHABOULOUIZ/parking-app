@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { MapPin, Clock, TrendingUp, DollarSign } from 'lucide-react';
 import Button from '../custom/Button';
+import { API_BASE_URL } from '../config/api';
 
 export default function SmartRecommendation() {
   const [datetime, setDatetime] = useState('');
@@ -16,7 +17,7 @@ export default function SmartRecommendation() {
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        '/api/predictions/recommend-sector',
+        `${API_BASE_URL}/predictions/recommend-sector`,
         { datetime, duration_hours: duration },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -34,7 +35,7 @@ export default function SmartRecommendation() {
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        '/api/predictions/availability',
+        `${API_BASE_URL}/predictions/availability`,
         { sector_id: sectorId, datetime },
         { headers: { Authorization: `Bearer ${token}` } }
       );
